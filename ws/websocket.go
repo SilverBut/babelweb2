@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Vivena/babelweb2/parser"
+	"github.com/SilverBut/babelweb2/parser"
 	"github.com/gorilla/websocket"
 )
 

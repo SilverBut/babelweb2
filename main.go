@@ -11,8 +11,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/Vivena/babelweb2/parser"
-	"github.com/Vivena/babelweb2/ws"
+	"github.com/SilverBut/babelweb2/parser"
+	"github.com/SilverBut/babelweb2/ws"
 )
 
 type nodeslice []string

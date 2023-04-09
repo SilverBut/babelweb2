@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -114,7 +115,11 @@ func main() {
 		}
 		dir = http.Dir(staticRoot)
 	} else {
-		dir = http.FS(staticFiles)
+		subdir, err := fs.Sub(staticFiles, "static")
+		if err != nil {
+			panic(err)
+		}
+		dir = http.FS(subdir)
 	}
 
 	bcastGrp := ws.NewListenerGroup()

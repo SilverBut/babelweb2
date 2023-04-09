@@ -42,7 +42,7 @@ func connection(updates chan parser.SBabelUpdate, node string) {
 	for {
 		log.Println("Trying", node)
 		for {
-			conn, err = net.Dial("tcp6", node)
+			conn, err = net.Dial("tcp", node)
 			if err != nil {
 				log.Println(err)
 				time.Sleep(time.Second * 5)

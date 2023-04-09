@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"embed"
 	"flag"
 	"fmt"
 	"io"
@@ -19,6 +20,11 @@ type nodeslice []string
 
 var nodes nodeslice
 var staticRoot string
+
+// embedding static file folder into the program
+//
+//go:embed static/*
+var staticFiles embed.FS
 
 func (i *nodeslice) String() string {
 	return fmt.Sprintf("%s", *i)
@@ -80,7 +86,7 @@ func main() {
 		"Babel node to connect to (default \"[::1]:33123\", "+
 			"may be repeated)")
 	flag.StringVar(&bwPort, "http", ":8080", "web server address")
-	flag.StringVar(&staticRoot, "static", "./static/",
+	flag.StringVar(&staticRoot, "static", "",
 		"directory with static files")
 	flag.Parse()
 	if len(nodes) == 0 {
@@ -96,18 +102,24 @@ func main() {
 		go connection(updates, nodes[i])
 	}
 
-	_, err := os.Stat(staticRoot)
-	if err != nil && os.IsNotExist(err) {
-		log.Fatalf("'%v': No such directory\n%v\n%v.\n", staticRoot,
-			"Try your best to find the directory containing the static files",
-			"and precise it via the -static option")
-	} else if err != nil {
-		log.Fatalf("Something went terribly wrong: %v\n", err)
+	var dir http.FileSystem
+	if staticRoot != "" {
+		_, err := os.Stat(staticRoot)
+		if err != nil && os.IsNotExist(err) {
+			log.Fatalf("'%v': No such directory\n%v\n%v.\n", staticRoot,
+				"Try your best to find the directory containing the static files",
+				"and precise it via the -static option")
+		} else if err != nil {
+			log.Fatalf("Something went terribly wrong: %v\n", err)
+		}
+		dir = http.Dir(staticRoot)
+	} else {
+		dir = http.FS(staticFiles)
 	}
 
 	bcastGrp := ws.NewListenerGroup()
 	handler := ws.Handler(bcastGrp)
-	http.Handle("/", http.FileServer(http.Dir(staticRoot)))
+	http.Handle("/", http.FileServer(dir))
 	http.Handle("/ws", handler)
 	go func() {
 		log.Printf("Listening on http://localhost%v\n", bwPort)
